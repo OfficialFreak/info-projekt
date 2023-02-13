@@ -10,3 +10,5 @@ egui = "0.20.1"
 egui_extras = { version = "0.20.0", features = ["image"] }
 eframe = "0.20.1"
 image = { version = "0.24.5", default-features = false, features = ["png"] }
+strum = "0.24.1"
+strum_macros = "0.24.3"
