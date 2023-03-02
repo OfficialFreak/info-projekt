@@ -118,8 +118,7 @@ struct LogikgatterApp {
     input_a: bool,
     input_b: bool,
     output: bool,
-    show_theory_window: bool,
-    show_manual_window: bool,
+    show_error_popup: bool,
 }
 
 impl LogikgatterApp {
@@ -132,8 +131,7 @@ impl LogikgatterApp {
             input_a: false,
             input_b: false,
             output: false,
-            show_theory_window: false,
-            show_manual_window: false,
+            show_error_popup: false,
         }
     }
 }
@@ -146,17 +144,35 @@ fn gen_bool_label(val: bool, label: &str) -> egui::Label {
     }
 }
 
+fn open_file(app: &mut LogikgatterApp, name: &str) {
+    let file_open_result = open::that(name);
+    match file_open_result {
+        Ok(_) => {},
+        Err(_) => app.show_error_popup = true,
+    }
+}
+
 impl eframe::App for LogikgatterApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        if self.show_error_popup {
+            egui::Window::new("Fehler - Datei nicht gefunden")
+                .open(&mut self.show_error_popup)
+                .resizable(false)
+                .collapsible(false)
+                .show(ctx, |ui| {
+                    ui.label("Die Datei konnte nicht geöffnet werden, da Sie sich nicht im Ordner des Programms befindet.");
+                });
+        }
+        
         self.output = LogicGates::compute(&self.selected_gate, self.input_a, self.input_b);
         egui::CentralPanel::default().show(ctx, |ui| {
             menu::bar(ui, |ui| {
                 ui.menu_button("Hilfe", |ui| {
                     if ui.button("Theorie Logikgatter").clicked() {
-                        self.show_theory_window = true;
+                        open_file(self, "Theorie.pdf");
                     }
                     if ui.button("Bedienungsanleitung").clicked() {
-                        self.show_manual_window = true;
+                        open_file(self, "Bedienungsanleitung.pdf");
                     }
                 })
             });
