@@ -154,6 +154,7 @@ fn open_file(app: &mut LogikgatterApp, name: &str) {
 
 impl eframe::App for LogikgatterApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        // Falls Datei nicht gefunden wird, zeige Error Popup an
         if self.show_error_popup {
             egui::Window::new("Fehler - Datei nicht gefunden")
                 .open(&mut self.show_error_popup)
@@ -166,6 +167,7 @@ impl eframe::App for LogikgatterApp {
         
         self.output = LogicGates::compute(&self.selected_gate, self.input_a, self.input_b);
         egui::CentralPanel::default().show(ctx, |ui| {
+            // Menu Bar mit Hilfe Button
             menu::bar(ui, |ui| {
                 ui.menu_button("Hilfe", |ui| {
                     if ui.button("Theorie Logikgatter").clicked() {
@@ -177,10 +179,12 @@ impl eframe::App for LogikgatterApp {
                 })
             });
             ui.with_layout(egui::Layout::from_main_dir_and_cross_align(egui::Direction::TopDown, egui::Align::Center), |ui| {
+                // Überschrift + Erklärtext
                 ui.label(egui::RichText::new("Logikgatter").heading().color(egui::Color32::from_rgb(255, 255, 255)));
                 ui.label("Wähle ein Logikgatter aus und setze die Pegel A / B auf High (Checked) oder Low (Unchecked).");
                 ui.separator();
                 ui.horizontal(|ui| {
+                    // Controls (Select Menu + Checkboxes)
                     ui.label("Logikgatter auswählen:");
                     egui::ComboBox::from_id_source(0)
                         .selected_text(self.selected_gate.to_string())
@@ -189,11 +193,12 @@ impl eframe::App for LogikgatterApp {
                                 ui.selectable_value(&mut self.selected_gate, gate, gate.to_string());
                             }
                         });
-                        ui.checkbox(&mut self.input_a, "Eingang A");
-                        if self.selected_gate != LogicGates::NOT {
-                            ui.checkbox(&mut self.input_b, "Eingang B");
-                        }
+                    ui.checkbox(&mut self.input_a, "Eingang A");
+                    if self.selected_gate != LogicGates::NOT {
+                        ui.checkbox(&mut self.input_b, "Eingang B");
+                    }
                 });
+                // Wahrheitstabelle
                 ui.horizontal(|ui| {
                     ui.vertical(|ui| {
                         ui.label(egui::RichText::new("Wahrheitstabelle").color(egui::Color32::from_rgb(255, 255, 255)));
@@ -264,10 +269,10 @@ impl eframe::App for LogikgatterApp {
                                 });
                         }
                     });
+                    // KV-Diagramm
                     self.gate_images.get(&self.selected_gate).unwrap().show_size(ui, egui::vec2(640.0/3.15, 640.0/3.15));
                     ui.vertical(|ui| {
                         ui.label(egui::RichText::new("Karnaugh-Veitch-Diagramm").color(egui::Color32::from_rgb(255, 255, 255)));
-                        // Table
                         ui.push_id(100, |ui| {
                             if self.selected_gate == LogicGates::NOT {
                                 let kv_diagram = TableBuilder::new(ui)
@@ -353,7 +358,7 @@ impl eframe::App for LogikgatterApp {
                 ui.add(gen_bool_label(self.output, "Ausgangspegel: "));
             });
             let painter = ui.painter();
-            // Labels
+            // Labels am KV-Diagramm
             let mut job = LayoutJob::default();
             job.append(
                 "A",
@@ -381,7 +386,7 @@ impl eframe::App for LogikgatterApp {
                 text_shape.angle = -3.14/2.0;
                 painter.add(text_shape);
             }
-            // Mark rows and columns according to inputs
+            // KV-Diagramm Markierungen
             if self.selected_gate != LogicGates::NOT {
                 let col_width = 64.5;
                 let row_height = 22.5;
@@ -410,7 +415,7 @@ impl eframe::App for LogikgatterApp {
                 let tmp_y = 162.5;
                 painter.rect_stroke(Rect::from_two_pos(Pos2::new(tmp_x, tmp_y), Pos2::new(tmp_x + col_width, tmp_y + 20.0)), 1.0, (1.0, Color32::LIGHT_BLUE));
             }
-            // Draw circles to indicate input and output in image
+            // Farbige Kreise auf dem Schaltplansymbol
             if self.selected_gate != LogicGates::NOT {
                 painter.circle_filled(Pos2::new(320.25, 144.5), 5.0, if self.input_a {
                     Color32::GREEN
@@ -439,6 +444,7 @@ impl eframe::App for LogikgatterApp {
 }
 
 fn main() {
+    // Initialisiert Fenster mit einigen Eistellungen
     let options = eframe::NativeOptions {
         initial_window_size: Some(egui::vec2(640.0, 350.0)),
         resizable: false,
